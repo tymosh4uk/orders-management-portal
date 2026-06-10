@@ -1,0 +1,18 @@
+# Local PostgreSQL for development (production uses Render Postgres).
+# Start: docker compose up -d
+# Then set DATABASE_URL in .env (see .env.example).
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orders_management
+    ports:
+      - "5432:5432"
+    volumes:
+      - orders_pgdata:/var/lib/postgresql/data
+
+volumes:
+  orders_pgdata:

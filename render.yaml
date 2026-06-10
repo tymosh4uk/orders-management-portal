@@ -1,0 +1,31 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# After connecting this repo in Render, set SHOPIFY_API_KEY and SHOPIFY_API_SECRET
+# in the dashboard (Dashboard → Service → Environment), then run `npm run deploy`.
+
+databases:
+  - name: orders-db
+    databaseName: orders_management
+    user: orders_user
+    plan: free
+
+services:
+  - type: web
+    name: orders-management-portal
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: orders-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: SCOPES
+        value: read_orders,read_products,write_orders
+      - key: SHOPIFY_APP_URL
+        value: https://orders-management-portal.onrender.com
+      - key: SHOPIFY_API_KEY
+        sync: false
+      - key: SHOPIFY_API_SECRET
+        sync: false

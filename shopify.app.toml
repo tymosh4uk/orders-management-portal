@@ -1,0 +1,43 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "c8c3d8134903392cd7174058acd291f0"
+name = "orders management portal"
+application_url = "https://orders-management-portal.onrender.com"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_orders,read_products,write_orders"
+
+[order.metafields.app.generated_message]
+type = "multi_line_text_field"
+name = "Generated message"
+description = "Random text generated when the order was created"
+
+  [order.metafields.app.generated_message.access]
+  admin = "merchant_read_write"
+
+[webhooks]
+api_version = "2026-07"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/create" ]
+  uri = "/webhooks/orders/create"
+
+[auth]
+redirect_urls = [
+  "https://orders-management-portal.onrender.com/auth/callback",
+  "https://orders-management-portal.onrender.com/auth/shopify/callback",
+  "https://orders-management-portal.onrender.com/api/auth/callback",
+]
+
+[build]
+automatically_update_urls_on_dev = true

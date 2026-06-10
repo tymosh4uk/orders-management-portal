@@ -1,0 +1,27 @@
+# Localhost dev config — webhook subscriptions omitted because Shopify
+# cannot register https://localhost URLs. Use `npm run dev:webhooks` to test webhooks.
+
+client_id = "c8c3d8134903392cd7174058acd291f0"
+name = "orders management portal"
+application_url = "https://localhost:3458"
+embedded = true
+
+[access_scopes]
+scopes = "read_orders,read_products,write_orders"
+
+[order.metafields.app.generated_message]
+type = "multi_line_text_field"
+name = "Generated message"
+description = "Random text generated when the order was created"
+
+  [order.metafields.app.generated_message.access]
+  admin = "merchant_read_write"
+
+[webhooks]
+api_version = "2026-07"
+
+[auth]
+redirect_urls = [ "https://localhost:3458/api/auth" ]
+
+[build]
+automatically_update_urls_on_dev = false
