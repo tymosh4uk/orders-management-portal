@@ -1,6 +1,8 @@
 import { formatOrderDate, formatShopMoney } from "../format";
+import { isOrderCancelled } from "../order-status";
 import type { Order } from "../types";
 import { OrderLineItemsTable } from "./OrderLineItemsTable";
+import styles from "./OrderCard.module.css";
 
 type OrderCardProps = {
   order: Order;
@@ -18,6 +20,8 @@ export function OrderCard({
   onToggleItems,
 }: OrderCardProps) {
   const lineItems = order.lineItems.edges.map((edge) => edge.node);
+  const cancelled = isOrderCancelled(order);
+  const cancelledClass = cancelled ? styles.cancelledText : undefined;
 
   return (
     <s-box
@@ -37,12 +41,17 @@ export function OrderCard({
             }}
           />
           <s-stack direction="block" gap="small-100">
-            <s-text type="strong">{order.name}</s-text>
+            <span className={cancelledClass}>
+              <s-text type="strong">{order.name}</s-text>
+            </span>
             <s-text color="subdued">{formatOrderDate(order.createdAt)}</s-text>
           </s-stack>
+          {cancelled && <s-badge tone="critical">Cancelled</s-badge>}
           <s-badge tone="info">{order.displayFinancialStatus}</s-badge>
           <s-badge tone="neutral">{order.displayFulfillmentStatus}</s-badge>
-          <s-text>{formatShopMoney(order.totalPriceSet.shopMoney)}</s-text>
+          <span className={cancelledClass}>
+            <s-text>{formatShopMoney(order.totalPriceSet.shopMoney)}</s-text>
+          </span>
           <s-text>
             {lineItems.length} item{lineItems.length === 1 ? "" : "s"}
           </s-text>

@@ -1,3 +1,5 @@
+import type { OrderFilters } from "./filters";
+
 export type LineItem = {
   id: string;
   title: string;
@@ -21,6 +23,7 @@ export type Order = {
   id: string;
   name: string;
   createdAt: string;
+  cancelledAt: string | null;
   displayFinancialStatus: string;
   displayFulfillmentStatus: string;
   totalPriceSet: {
@@ -41,5 +44,7 @@ export type OrdersConnection = {
 
 export type OrdersLoaderData = {
   orders: OrdersConnection | null;
+  ordersCount: number;
+  filters: OrderFilters;
   accessError: string | null;
 };

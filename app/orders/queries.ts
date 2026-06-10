@@ -1,10 +1,20 @@
 export const ORDERS_LIST_QUERY = `#graphql
-  query OrdersList($first: Int, $after: String, $last: Int, $before: String) {
+  query OrdersList(
+    $first: Int
+    $after: String
+    $last: Int
+    $before: String
+    $query: String
+  ) {
+    ordersCount(query: $query) {
+      count
+    }
     orders(
       first: $first
       after: $after
       last: $last
       before: $before
+      query: $query
       sortKey: CREATED_AT
       reverse: true
     ) {
@@ -14,6 +24,7 @@ export const ORDERS_LIST_QUERY = `#graphql
           id
           name
           createdAt
+          cancelledAt
           displayFinancialStatus
           displayFulfillmentStatus
           totalPriceSet {

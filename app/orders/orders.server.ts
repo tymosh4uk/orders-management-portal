@@ -1,6 +1,11 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
+import {
+  buildOrdersSearchQuery,
+  DEFAULT_ORDER_FILTERS,
+  parseOrderFilters,
+} from "./filters";
 import { ORDERS_LIST_QUERY, ORDERS_PAGE_SIZE } from "./queries";
 import {
   isProtectedCustomerDataError,
@@ -9,7 +14,10 @@ import {
 import type { OrdersConnection, OrdersLoaderData } from "./types";
 
 type OrdersQueryResponse = {
-  data?: { orders: OrdersConnection };
+  data?: {
+    orders: OrdersConnection;
+    ordersCount: { count: number };
+  };
   errors?: Array<{ message: string }>;
 };
 
@@ -24,32 +32,49 @@ function getPaginationVariables(request: Request) {
   return { first: ORDERS_PAGE_SIZE, after: url.searchParams.get("cursor") };
 }
 
-function protectedDataLoaderResult(): OrdersLoaderData {
-  return { orders: null, accessError: PROTECTED_CUSTOMER_DATA_MESSAGE };
+function protectedDataLoaderResult(
+  filters = DEFAULT_ORDER_FILTERS,
+): OrdersLoaderData {
+  return {
+    orders: null,
+    ordersCount: 0,
+    filters,
+    accessError: PROTECTED_CUSTOMER_DATA_MESSAGE,
+  };
 }
 
 export async function loadOrders(request: Request): Promise<OrdersLoaderData> {
   const { admin } = await authenticate.admin(request);
+  const filters = parseOrderFilters(request);
+  const searchQuery = buildOrdersSearchQuery(filters);
 
   try {
     const response = await admin.graphql(ORDERS_LIST_QUERY, {
-      variables: getPaginationVariables(request),
+      variables: {
+        ...getPaginationVariables(request),
+        query: searchQuery,
+      },
     });
     const body = (await response.json()) as OrdersQueryResponse;
 
     if (body.errors?.length) {
       const message = body.errors.map((error) => error.message).join(", ");
       if (isProtectedCustomerDataError(message)) {
-        return protectedDataLoaderResult();
+        return protectedDataLoaderResult(filters);
       }
       throw new Response(message, { status: 500 });
     }
 
-    return { orders: body.data!.orders, accessError: null };
+    return {
+      orders: body.data!.orders,
+      ordersCount: body.data!.ordersCount.count,
+      filters,
+      accessError: null,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (isProtectedCustomerDataError(message)) {
-      return protectedDataLoaderResult();
+      return protectedDataLoaderResult(filters);
     }
     throw error;
   }

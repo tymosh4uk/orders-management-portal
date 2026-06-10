@@ -1,23 +1,33 @@
 import { useState } from "react";
+import type { OrderFilters } from "../filters";
 import type { Order, OrdersConnection } from "../types";
 import { OrderCard } from "./OrderCard";
 import { OrdersPagination } from "./OrdersPagination";
+import { SelectAllBanner } from "./SelectAllBanner";
 
 type OrderListProps = {
   orders: OrdersConnection;
-  allSelected: boolean;
-  someSelected: boolean;
-  selectedIds: Set<string>;
-  onToggleAll: (checked: boolean) => void;
+  filters: OrderFilters;
+  totalCount: number;
+  allPageSelected: boolean;
+  somePageSelected: boolean;
+  showSelectAllBanner: boolean;
+  isOrderSelected: (orderId: string) => boolean;
+  onToggleAllOnPage: (checked: boolean) => void;
+  onSelectAllMatching: () => void;
   onToggleOrder: (orderId: string, checked: boolean) => void;
 };
 
 export function OrderList({
   orders,
-  allSelected,
-  someSelected,
-  selectedIds,
-  onToggleAll,
+  filters,
+  totalCount,
+  allPageSelected,
+  somePageSelected,
+  showSelectAllBanner,
+  isOrderSelected,
+  onToggleAllOnPage,
+  onSelectAllMatching,
   onToggleOrder,
 }: OrderListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -31,29 +41,37 @@ export function OrderList({
     <s-stack direction="block" gap="base">
       <s-stack direction="inline" gap="base" alignItems="center">
         <s-checkbox
-          accessibilityLabel="Select all orders"
-          checked={allSelected}
-          indeterminate={someSelected}
+          accessibilityLabel="Select all orders on this page"
+          checked={allPageSelected}
+          indeterminate={somePageSelected}
           onChange={(event) => {
             const target = event.target as HTMLInputElement;
-            onToggleAll(target.checked);
+            onToggleAllOnPage(target.checked);
           }}
         />
         <s-text type="strong">Select all</s-text>
       </s-stack>
 
+      {showSelectAllBanner && (
+        <SelectAllBanner
+          pageCount={orderList.length}
+          totalCount={totalCount}
+          onSelectAllMatching={onSelectAllMatching}
+        />
+      )}
+
       {orderList.map((order) => (
         <OrderCard
           key={order.id}
           order={order}
-          isSelected={selectedIds.has(order.id)}
+          isSelected={isOrderSelected(order.id)}
           isExpanded={expandedId === order.id}
           onSelect={(checked) => onToggleOrder(order.id, checked)}
           onToggleItems={() => handleToggleItems(order)}
         />
       ))}
 
-      <OrdersPagination pageInfo={orders.pageInfo} />
+      <OrdersPagination pageInfo={orders.pageInfo} filters={filters} />
     </s-stack>
   );
 }
